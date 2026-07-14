@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគ្រប់គ្រងសេវាកម្ម និងបង្កើតវិក្កយបត្រ SM Digital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+
+    <style>
+        :root {
+            --bright-blue: #1a73e8;
+            --deep-blue: #0b2240; 
+            --light-blue-bg: #f1f7fe;
+            --dark-text: #202124;
+            --gray-text: #5f6368;
+            --light-gray: #dadce0;
+            --border-color: #e8eaed;
+            --success: #137333;
+            --success-bg: #e6f4ea;
+            --danger: #d93025;
+            --card-shadow: 0 4px 20px rgba(11, 34, 64, 0.06);
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Kantumruy Pro', 'Roboto', sans-serif;
+            font-weight: 400;
+        }
+
+        strong {
+            font-weight: 500;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: var(--dark-text);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            color: var(--deep-blue);
+        }
+
+        .sync-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sync-input {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            width: 200px;
+            outline: none;
+        }
+
+        .sync-input:focus {
+            border-color: var(--bright-blue);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .btn-primary { background: var(--bright-blue); color: white; }
+        .btn-primary:hover { background: #1557b0; }
+        .btn-secondary { background: var(--light-blue-bg); color: var(--bright-blue); border-color: #d2e3fc; }
+        .btn-secondary:hover { background: #e8f0fe; }
+        .btn-icon { background: transparent; border: none; cursor: pointer; color: var(--gray-text); padding: 4px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-icon:hover { background: #f3f4f6; color: var(--dark-text); }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 24px;
+            flex-grow: 1;
+        }
+
+        .sidebar-forms {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+        }
+
+        .card .card-title {
+            font-size: 15px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--deep-blue);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: var(--gray-text);
+            margin-bottom: 4px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 13.5px;
+            outline: none;
+            background: #ffffff;
+            color: var(--dark-text);
+        }
+
+        .form-control:focus {
+            border-color: var(--bright-blue);
+        }
+
+        .dashboard-view {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 12px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            color: var(--gray-text);
+            position: relative;
+        }
+
+        .tab-btn.active {
+            color: var(--bright-blue);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--bright-blue);
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 6px 12px;
+            gap: 8px;
+        }
+
+        .search-input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 13.5px;
+        }
+
+        .data-table-container {
+            background: white;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: #f8f9fa;
+            color: var(--deep-blue);
+            padding: 12px 16px;
+            font-size: 12.5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 14px 16px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--dark-text);
+        }
+
+        tr:hover td {
+            background: #fdfdfd;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 34, 64, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- MODERN ZONE RECEIPT RENDER --- */
+        #receipt-render-zone {
+            width: 360px;
+            background: #0b2240; 
+            position: relative;
+            overflow: hidden;
+            padding: 24px 16px 24px 16px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .r-bank-header {
+            text-align: center;
+            margin-bottom: 14px;
+            width: 100%;
+        }
+
+        .r-bank-logo-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 34px;
+            margin-bottom: 4px;
+        }
+
+        .r-bank-logo-img {
+            max-height: 100%;
+            max-width: 160px;
+            object-fit: contain;
+        }
+
+        .r-success-icon-wrap {
+            margin: 8px auto 6px auto;
+            width: 54px;
+            height: 54px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .r-thank-img {
+            width: 34px;
+            height: 34px;
+            object-fit: contain;
+        }
+
+        .r-success-text {
+            color: #ffffff;
+            font-size: 13px;
+            margin-top: 2px;
+            opacity: 0.9;
+        }
+
+        .r-ticket-container {
+            width: 100%;
+            background: #ffffff;
+            border-radius: 16px;
+            position: relative;
+            padding: 16px 16px 22px 16px; 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .r-ticket-container::before,
+        .r-ticket-container::after {
+            content: '';
+            position: absolute;
+            top: 96px;
+            width: 14px;
+            height: 14px;
+            background: #0b2240;
+            border-radius: 50%;
+            z-index: 10;
+        }
+        .r-ticket-container::before { left: -7px; }
+        .r-ticket-container::after { right: -7px; }
+
+        .r-top-bill-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #f1f3f4;
+        }
+
+        .r-bill-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e8f0fe;
+        }
+
+        .r-client-logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .r-bill-meta {
+            flex-grow: 1;
+        }
+
+        .r-bill-type {
+            font-size: 11px;
+            color: var(--gray-text);
+            margin-bottom: 2px;
+        }
+
+        .r-customer-name { font-size: 13.5px; color: var(--deep-blue); }
+        .r-bill-amount-main { font-size: 19px; color: var(--danger); margin-top: 1px; }
+        .r-ticket-divider { border-top: 1px dashed #dadce0; margin: 12px 0; width: 100%; }
+        .r-info-list { display: flex; flex-direction: column; gap: 9px; }
+        .r-info-row { display: flex; justify-content: space-between; align-items: flex-start; font-size: 12px; }
+        .r-info-label { color: var(--gray-text); min-width: 110px; }
+        .r-info-value { color: var(--dark-text); text-align: right; word-break: break-word; }
+        .r-discount-text-line { margin-top: 12px; padding: 8px 2px; color: var(--success); font-size: 11.5px; border-top: 1px solid #f1f3f4; text-align: left; line-height: 1.4; }
+        .r-assurance-footer { margin-top: 12px; background: var(--light-blue-bg); border-radius: 8px; padding: 7px; display: flex; align-items: center; justify-content: center; gap: 6px; color: var(--bright-blue); font-size: 11px; }
+
+        .r-ticket-bottom-pattern {
+            width: 100%;
+            height: 10px;
+            position: absolute;
+            bottom: -1px; 
+            left: 0;
+            z-index: 20;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 10' width='20' height='10'%3E%3Cpolygon points='0,10 10,0 20,10' fill='%230b2240'/%3E%3C/svg%3E");
+            background-size: 16px 10px;
+            background-repeat: repeat-x;
+        }
+
+        .comp-sorry-box {
+            text-align: center;
+            margin: 4px 0 8px 0;
+            padding: 8px;
+            background: #fff5f5;
+            border-radius: 10px;
+            border: 1px dashed #feb2b2;
+        }
+        .comp-sorry-img { width: 36px; height: 36px; object-fit: contain; margin-bottom: 2px; }
+        .comp-sorry-text { font-size: 11.5px; color: #c53030; line-height: 1.3; }
+        .comp-badge { background: #feebc8; color: #c05621; padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+
+        .toast {
+            position: fixed; bottom: 20px; right: 20px;
+            background: #202124; color: white; padding: 12px 24px;
+            border-radius: var(--radius-md); font-size: 13px; display: none; z-index: 2000;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <span class="material-icons-round" style="font-size: 24px;">dashboard</span>
+            <span><strong>ប្រព័ន្ធគ្រប់គ្រងសេវាកម្ម SM Digital</strong></span>
+        </div>
+        <div class="sync-box">
+            <input type="text" id="syncInput" class="sync-input" placeholder="កូដសម្ងាត់ទិន្នន័យ...">
+            <button class="btn btn-secondary" onclick="loadDataFromCode()"><span class="material-icons-round" style="font-size: 16px;">cloud_download</span> <strong>ទាញទិន្នន័យ</strong></button>
+            <button class="btn btn-primary" onclick="generateSyncCode()"><span class="material-icons-round" style="font-size: 16px;">content_copy</span> <strong>ចម្លងកូដ</strong></button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="sidebar-forms">
+            <div class="card" id="formProductZone">
+                <div class="card-title"><span class="material-icons-round">inventory</span> <strong>១. គ្រប់គ្រងស្តុកទំនិញ</strong></div>
+                <form id="productForm" onsubmit="saveProduct(event)">
+                    <input type="hidden" id="editProdIndex" value="-1">
+                    <div class="form-group">
+                        <label><strong>លេខកូដទំនិញ</strong></label>
+                        <input type="text" id="pCode" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label><strong>ឈ្មោះទំនិញ / កម្មវិធី</strong></label>
+                        <input type="text" id="pName" class="form-control" placeholder="ឧ. Netflix, ChatGPT" required>
+                    </div>
+                    <div class="form-group">
+                        <label><strong>គម្រោងរយៈពេល (ចំនួនខែ)</strong></label>
+                        <input type="number" id="pPlan" class="form-control" placeholder="ឧ. 1, 3, 12" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label><strong>ការធានា</strong></label>
+                        <select id="pWarranty" class="form-control" required>
+                            <option value="មិនមានការធានា">មិនមានការធានា</option>
+                            <option value="១សប្តាហ៍">១សប្តាហ៍</option>
+                            <option value="២សប្តាហ៍">២សប្តាហ៍</option>
+                            <option value="៣សប្តាហ៍">៣សប្តាហ៍</option>
+                            <option value="១ខែ" selected>១ខែ</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><strong>តម្លៃពេញផ្លូវការពីក្រុមហ៊ុន ($)</strong></label>
+                        <input type="number" id="pCompanyPrice" class="form-control" step="0.01" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label><strong>តម្លៃដើមនាំចូល ($)</strong></label>
+                        <input type="number" id="pCostPrice" class="form-control" step="0.01" placeholder="0.00" oninput="calculateProfit()" required>
+                    </div>
+                    <div class="form-group">
+                        <label><strong>តម្លៃលក់ចេញរបស់យើង ($)</strong></label>
+                        <input type="number" id="pPrice" class="form-control" step="0.01" placeholder="0.00" oninput="calculateProfit()" required>
+                    </div>
+                    <div class="form-group">
+                        <label><strong>ប្រាក់ចំណេញរំពឹងទុក ($) - អូតូ</strong></label>
+                        <input type="text" id="pProfit" class="form-control" style="background:#f1f7fe; font-weight:bold; color:var(--success);" placeholder="0.00" readonly>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;"><strong>រក្សាទុកទំនិញ</strong></button>
+                    <button type="button" id="btnCancelProd" class="btn btn-secondary" style="width:100%; margin-top:6px; display:none;" onclick="resetProductForm()"><strong>បោះបង់</strong></button>
+                </form>
+            </div>
+
+            <div class="card" id="formCustomerZone" style="display:none;">
+                <div class="card-title"><span class="material-icons-round">person_add</span> <strong>២. បញ្ចូលព័ត៌មានអតិថិជន</strong></div>
+                <form id="customerForm" onsubmit="saveCustomer(event)">
+                    <input type="hidden" id="editCustIndex" value="-1">
+                    <input type="hidden" id="cCompanyPrice"> 
+                    <div class="form-group">
+                        <label><strong>លេខកូដអតិថិជន (ស្វ័យប្រវត្ត)</strong></label>
+                        <input type="text" id="cCode" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label><strong>ឈ្មោះអតិថិជន</strong></label>
+                        <input type="text" id="cName" class="form-control" placeholder="បញ្ចូលឈ្មោះអ្នកទិញ" required>
+                    </div>
+                    <div class="form-group">
+                        <label><strong>ជ្រើសរើសទំនិញ (ដែលមានក្នុងស្តុក)</strong></label>
+                        <select id="cProdSelect" class="form-control" onchange="autoFillProductDetails()" required>
+                            <option value="">-- រើសទំនិញ --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><strong>គម្រោង (ខែ)</strong></label>
+                        <input type="number" id="cPlan" class="form-control" min="1" oninput="autoCalculateExpiry()" required>
+                    </div>
+                    <div class="form-group">
+                        <label><strong>តម្លៃលក់ឱ្យអតិថិជន ($) - (អាចកែបាន)</strong></label>
+                        <input type="number" id="cPrice" class="form-control" step="0.01" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label><strong>ការធានា</strong></label>
+                        <select id="cWarranty" class="form-control" required>
+                            <option value="មិនមានការធានា">មិនមានការធានា</option>
+                            <option value="១សប្តាហ៍">១សប្តាហ៍</option>
+                            <option value="២សប្តាហ៍">២សប្តាហ៍</option>
+                            <option value="៣សប្តាហ៍">៣សប្តាហ៍</option>
+                            <option value="១ខែ">១ខែ</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><strong>ថ្ងៃខែឆ្នាំចាប់ផ្តើម</strong></label>
+                        <input type="datetime-local" id="cDateStart" class="form-control" onchange="autoCalculateExpiry()" required>
+                    </div>
+                    <div class="form-group">
+                        <label><strong>ថ្ងៃខែឆ្នាំបញ្ចប់ (អូតូ)</strong></label>
+                        <input type="text" id="cDateEnd" class="form-control" style="background:#f8f9fa;" readonly>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;"><strong>រក្សាទុកអតិថិជន</strong></button>
+                    <button type="button" id="btnCancelCust" class="btn btn-secondary" style="width:100%; margin-top:6px; display:none;" onclick="resetCustomerForm()"><strong>បោះបង់</strong></button>
+                </form>
+            </div>
+        </div>
+
+        <div class="dashboard-view">
+            <div class="tab-buttons">
+                <button class="tab-btn active" id="tabProdBtn" onclick="switchTab('products')"><strong>ស្តុកទំនិញទាំងអស់</strong></button>
+                <button class="tab-btn" id="tabCustBtn" onclick="switchTab('customers')"><strong>បញ្ជីឈ្មោះអតិថិជនទិញ</strong></button>
+            </div>
+
+            <div class="search-container">
+                <span class="material-icons-round" style="color:var(--gray-text); font-size: 20px;">search</span>
+                <input type="text" id="tableSearchInput" class="search-input" placeholder="ស្វែងរកតាមឈ្មោះ ឬលេខកូដវិក្កយបត្រ..." oninput="filterTableData()">
+            </div>
+
+            <div id="productsTableZone" class="data-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th><strong>លេខកូដ</strong></th>
+                            <th><strong>ឈ្មោះទំនិញ</strong></th>
+                            <th><strong>គម្រោង</strong></th>
+                            <th><strong>ការធានា</strong></th>
+                            <th><strong>តម្លៃក្រុមហ៊ុន</strong></th>
+                            <th><strong>តម្លៃដើមនាំចូល</strong></th>
+                            <th><strong>តម្លៃលក់</strong></th>
+                            <th><strong>ប្រាក់ចំណេញ</strong></th>
+                            <th><strong>សកម្មភាព</strong></th>
+                        </tr>
+                    </thead>
+                    <tbody id="prodTableBody"></tbody>
+                </table>
+            </div>
+
+            <div id="customersTableZone" class="data-table-container" style="display:none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th><strong>កូដលក់</strong></th>
+                            <th><strong>ឈ្មោះអតិថិជន</strong></th>
+                            <th><strong>ទំនិញទិញ</strong></th>
+                            <th><strong>គម្រោង</strong></th>
+                            <th><strong>ការធានា</strong></th>
+                            <th><strong>តម្លៃលក់ជាក់ស្តែង</strong></th>
+                            <th><strong>ថ្ងៃចាប់ផ្តើម</strong></th>
+                            <th><strong>ថ្ងៃផុតកំណត់</strong></th>
+                            <th><strong>វិក្កយបត្រ</strong></th>
+                        </tr>
+                    </thead>
+                    <tbody id="custTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="receiptModal" class="modal">
+        <div class="modal-content" style="max-width: 440px;">
+            <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="color:var(--deep-blue); font-size: 14px;"><strong>ទម្រង់វិក្កយបត្រប្រព័ន្ធ</strong></div>
+                <button class="btn-icon" onclick="closeModal()"><span class="material-icons-round">close</span></button>
+            </div>
+            
+            <div style="display: flex; gap: 8px; width: 100%; margin-bottom: 12px;">
+                <button id="btnOptNormal" class="btn btn-primary" style="flex:1; justify-content:center;" onclick="toggleReceiptMode('normal')">វិក្កយបត្រធម្មតា</button>
+                <button id="btnOptComp" class="btn btn-secondary" style="flex:1; justify-content:center;" onclick="toggleReceiptMode('comp')">វិក្កយបត្រថែមថ្ងៃ</button>
+            </div>
+
+            <div id="receipt-render-zone">
+                <div class="r-bank-header">
+                    <div class="r-bank-logo-title">
+                        <img src="logo.png" alt="SM Digital" class="r-bank-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                        <span style="display:none; color:#ffffff; font-size: 14px;"><strong>SM DIGITAL</strong></span>
+                    </div>
+                    <div class="r-success-icon-wrap">
+                        <img src="thank.png" alt="Icon" class="r-thank-img" id="rHeaderIcon">
+                    </div>
+                    <div class="r-success-text" id="rReceiptTypeText"><strong>វិក្កយបត្រទំនិញ</strong></div>
+                </div>
+                
+                <div class="r-ticket-container">
+                    <div class="r-top-bill-info">
+                        <div class="r-bill-avatar">
+                            <img src="client.png" alt="Client Logo" class="r-client-logo-img" onerror="this.src='https://ui-avatars.com/api/?name=Client&background=e8f0fe&color=1a73e8';">
+                        </div>
+                        <div class="r-bill-meta">
+                            <div class="r-bill-type"><strong>ប្រភេទ៖ ឌីជីថល</strong></div>
+                            <div class="r-customer-name" id="rName"><strong>John Doe</strong></div>
+                            <div class="r-bill-amount-main" id="rPrice"><strong>$0.00</strong></div>
+                        </div>
+                    </div>
+
+                    <div id="compSorrySection" class="comp-sorry-box" style="display:none;">
+                        <img src="thank" alt="Sorry" class="comp-sorry-img" onerror="this.src='ok.png';">
+                        <div class="comp-sorry-text"><strong>សូមអភ័យទោសចំពោះការខកខាននានា! SM Digital បានបន្ថែមថ្ងៃប្រើប្រាស់ជូនបងដោយក្តីរីករាយ និងអរគុណច្រើន។</strong></div>
+                    </div>
+
+                    <div class="r-ticket-divider"></div>
+
+                    <div class="r-info-list">
+                        <div class="r-info-row">
+                            <span class="r-info-label"><strong>ទំនិញទិញ</strong></span>
+                            <span class="r-info-value" id="rProdName"><strong>Premium App</strong></span>
+                        </div>
+                        <div class="r-info-row" id="rowNormalPlan">
+                            <span class="r-info-label"><strong>គម្រោងប្រើប្រាស់</strong></span>
+                            <span class="r-info-value" id="rPlan"><strong>1 ខែ</strong></span>
+                        </div>
+                        <div class="r-info-row" id="rowNormalPrice">
+                            <span class="r-info-label"><strong>តម្លៃក្រុមហ៊ុន</strong></span>
+                            <span class="r-info-value" style="text-decoration: line-through; color: var(--danger); font-weight: 500;" id="rOriginalPrice">$0.00</span>
+                        </div>
+                        <div class="r-info-row">
+                            <span class="r-info-label"><strong>លេខវិក្កយបត្រ</strong></span>
+                            <span class="r-info-value" style="font-family: monospace;" id="rCode"><strong>000001</strong></span>
+                        </div>
+                        
+                        <div class="r-info-row" id="rowDateOld" style="display:none;">
+                            <span class="r-info-label"><strong>ផុតកំណត់ចាស់</strong></span>
+                            <span class="r-info-value" style="color:var(--gray-text);" id="rDateOld"><strong>-</strong></span>
+                        </div>
+                        <div class="r-info-row" id="rowDaysAdded" style="display:none;">
+                            <span class="r-info-label"><strong>ចំនួនថ្ងៃថែមជូន</strong></span>
+                            <span class="r-info-value" id="rDaysAdded"><span class="comp-badge"><strong>+0 ថ្ងៃ</strong></span></span>
+                        </div>
+                        <div class="r-info-row" id="rowDateBuy">
+                            <span class="r-info-label"><strong>ថ្ងៃខែទិញ</strong></span>
+                            <span class="r-info-value" id="rDate"><strong>2026-07-14</strong></span>
+                        </div>
+                        <div class="r-info-row">
+                            <span class="r-info-label" id="lblEndDate"><strong>ថ្ងៃផុតកំណត់</strong></span>
+                            <span class="r-info-value" style="color: #b45309;" id="rEnd"><strong>2026-08-14</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="r-discount-text-line" id="rSavedPercent">
+                        <strong>បើប្រៀបនឹងតម្លៃដើមអ្នកបានចំណេញ 0%</strong>
+                    </div>
+
+                    <div class="r-assurance-footer">
+                        <span class="material-icons-round" style="font-size: 13px;">verified_user</span>
+                        <span id="rWarranty"><strong>រយៈពេលធានា៖ ធានា ១ខែ</strong></span>
+                    </div>
+
+                    <div class="r-ticket-bottom-pattern"></div>
+                </div>
+            </div>
+
+            <div id="compActionBox" style="display:none; width:100%; margin-top:10px; padding:10px; background:#f8f9fa; border-radius:8px;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label><strong>បញ្ចូលចំនួនថ្ងៃត្រូវបន្ថែមប៉ះប៉ូវ (Days)</strong></label>
+                    <input type="number" id="inputAddDays" class="form-control" value="3" min="1" oninput="recalculateCompensationDates()">
+                </div>
+            </div>
+
+            <div style="width:100%; display:flex; gap:12px; margin-top:16px;">
+                <button class="btn btn-secondary" style="flex:1" onclick="closeModal()"><strong>បិទ</strong></button>
+                <button class="btn btn-primary" style="flex:2" onclick="downloadReceiptAsJPG()">
+                    <span class="material-icons-round" style="font-size: 16px;">download</span> <strong>ទាញយក JPG</strong>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        let products = JSON.parse(localStorage.getItem('sys_products_sm')) || [];
+        let customers = JSON.parse(localStorage.getItem('sys_customers_sm')) || [];
+        let currentTab = 'products';
+        let activeReceiptIndex = null;
+        let activeReceiptMode = 'normal';
+
+        function calculateProfit() {
+            const cost = parseFloat(document.getElementById('pCostPrice').value) || 0;
+            const price = parseFloat(document.getElementById('pPrice').value) || 0;
+            const profit = price - cost;
+            document.getElementById('pProfit').value = profit.toFixed(2);
+        }
+
+        function getNextProductCode() {
+            if (products.length === 0) return "000001";
+            const lastCode = products[products.length - 1].code;
+            return String(parseInt(lastCode, 10) + 1).padStart(6, '0');
+        }
+
+        function getNextCustomerCode() {
+            let baseCode = products.length > 0 ? products[products.length - 1].code : "000000";
+            if (customers.length > 0) {
+                // រកកូដធំបំផុតដែលមានស្រាប់ ដើម្បីកុំឱ្យជាន់គ្នាពេលដាក់បញ្ជីពីថ្មីទៅចាស់
+                const maxCode = Math.max(...customers.map(c => parseInt(c.code, 10) || 0));
+                baseCode = String(maxCode).padStart(6, '0');
+            }
+            return String(parseInt(baseCode, 10) + 1).padStart(6, '0');
+        }
+
+        function initFormDates() {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('cDateStart').value = now.toISOString().slice(0, 16);
+            document.getElementById('pCode').value = getNextProductCode();
+            document.getElementById('cCode').value = getNextCustomerCode();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const tabProdBtn = document.getElementById('tabProdBtn');
+            const tabCustBtn = document.getElementById('tabCustBtn');
+            const formProductZone = document.getElementById('formProductZone');
+            const formCustomerZone = document.getElementById('formCustomerZone');
+            const productsTableZone = document.getElementById('productsTableZone');
+            const customersTableZone = document.getElementById('customersTableZone');
+            
+            document.getElementById('tableSearchInput').value = '';
+
+            if (tab === 'products') {
+                formProductZone.style.display = 'block';
+                formCustomerZone.style.display = 'none';
+                productsTableZone.style.display = 'block';
+                customersTableZone.style.display = 'none';
+                tabProdBtn.classList.add('active');
+                tabCustBtn.classList.remove('active');
+                renderProducts();
+            } else {
+                formProductZone.style.display = 'none';
+                formCustomerZone.style.display = 'block';
+                productsTableZone.style.display = 'none';
+                customersTableZone.style.display = 'block';
+                tabProdBtn.classList.remove('active');
+                tabCustBtn.classList.add('active');
+                renderCustomers();
+            }
+        }
+
+        function saveProduct(e) {
+            e.preventDefault();
+            const index = parseInt(document.getElementById('editProdIndex').value);
+            const costPrice = parseFloat(document.getElementById('pCostPrice').value) || 0;
+            const price = parseFloat(document.getElementById('pPrice').value) || 0;
+
+            const product = {
+                code: document.getElementById('pCode').value.trim(),
+                name: document.getElementById('pName').value.trim(),
+                plan: parseInt(document.getElementById('pPlan').value),
+                warranty: document.getElementById('pWarranty').value,
+                companyPrice: parseFloat(document.getElementById('pCompanyPrice').value),
+                costPrice: costPrice,
+                price: price,
+                profit: price - costPrice
+            };
+
+            if (index === -1) {
+                products.push(product);
+                showToast("បានបញ្ចូលទំនិញថ្មីទៅក្នុងស្តុក!");
+            } else {
+                products[index] = product;
+                showToast("បានកែប្រែព័ត៌មានទំនិញជោគជ័យ!");
+            }
+
+            localStorage.setItem('sys_products_sm', JSON.stringify(products));
+            resetProductForm();
+            renderProducts();
+            updateProductSelectDropdown();
+        }
+
+        function editProduct(index) {
+            const p = products[index];
+            document.getElementById('editProdIndex').value = index;
+            document.getElementById('pCode').value = p.code;
+            document.getElementById('pName').value = p.name;
+            document.getElementById('pPlan').value = p.plan;
+            document.getElementById('pWarranty').value = p.warranty;
+            document.getElementById('pCompanyPrice').value = p.companyPrice;
+            document.getElementById('pCostPrice').value = p.costPrice || 0;
+            document.getElementById('pPrice').value = p.price;
+            calculateProfit();
+            document.getElementById('btnCancelProd').style.display = 'inline-flex';
+        }
+
+        function deleteProduct(index) {
+            if (confirm("តើអ្នកពិតជាចង់លុបទំនិញនេះមែនទេ?")) {
+                products.splice(index, 1);
+                localStorage.setItem('sys_products_sm', JSON.stringify(products));
+                renderProducts();
+                updateProductSelectDropdown();
+                showToast("បានលុបទំនិញចេញពីស្តុក!");
+            }
+        }
+
+        function resetProductForm() {
+            document.getElementById('productForm').reset();
+            document.getElementById('editProdIndex').value = "-1";
+            document.getElementById('btnCancelProd').style.display = 'none';
+            document.getElementById('pCode').value = getNextProductCode();
+            document.getElementById('pProfit').value = "0.00";
+        }
+
+        function autoFillProductDetails() {
+            const selectedName = document.getElementById('cProdSelect').value;
+            const prod = products.find(p => p.name === selectedName);
+            if (prod) {
+                document.getElementById('cPlan').value = prod.plan;
+                document.getElementById('cPrice').value = prod.price; // បំពេញតម្លៃអូតូ ប៉ុន្តែអ្នកអាចកែបាន
+                document.getElementById('cCompanyPrice').value = prod.companyPrice;
+                document.getElementById('cWarranty').value = prod.warranty;
+                autoCalculateExpiry();
+            } else {
+                document.getElementById('cPrice').value = '';
+                document.getElementById('cCompanyPrice').value = '0';
+            }
+        }
+
+        function autoCalculateExpiry() {
+            const startDateVal = document.getElementById('cDateStart').value;
+            const planMonths = parseInt(document.getElementById('cPlan').value) || 0;
+            if (!startDateVal) return;
+
+            const startDate = new Date(startDateVal);
+            startDate.setMonth(startDate.getMonth() + planMonths);
+            
+            const day = String(startDate.getDate()).padStart(2, '0');
+            const month = String(startDate.getMonth() + 1).padStart(2, '0');
+            const year = startDate.getFullYear();
+            const hours = String(startDate.getHours()).padStart(2, '0');
+            const minutes = String(startDate.getMinutes()).padStart(2, '0');
+
+            document.getElementById('cDateEnd').value = `${year}-${month}-${day} ${hours}:${minutes}`;
+        }
+
+        function saveCustomer(e) {
+            e.preventDefault();
+            const index = parseInt(document.getElementById('editCustIndex').value);
+            const selectedProdName = document.getElementById('cProdSelect').value;
+            const typedPrice = parseFloat(document.getElementById('cPrice').value) || 0;
+            const compPrice = parseFloat(document.getElementById('cCompanyPrice').value) || 0;
+
+            const customer = {
+                code: document.getElementById('cCode').value.trim(),
+                name: document.getElementById('cName').value.trim(),
+                prodName: selectedProdName,
+                plan: document.getElementById('cPlan').value,
+                warranty: document.getElementById('cWarranty').value,
+                dateStart: document.getElementById('cDateStart').value.replace('T', ' '),
+                dateEnd: document.getElementById('cDateEnd').value,
+                price: typedPrice, // យកតម្លៃដែលបានបញ្ចូលជាក់ស្តែងក្នុងប្រអប់ Form (ទោះជាកែក៏ដោយ)
+                companyPrice: compPrice
+            };
+
+            if (index === -1) {
+                // បន្ថែមទៅខាងលើគេបង្អស់នៃ Array
+                customers.unshift(customer);
+                showToast("បានរក្សាទុកអតិថិជនថ្មីនៅខាងលើគេ!");
+            } else {
+                // ករណី Edit គឺរក្សាទីតាំងចាស់ដដែល
+                customers[index] = customer;
+                showToast("បានធ្វើបច្ចុប្បន្នភាពអតិថិជន!");
+            }
+
+            localStorage.setItem('sys_customers_sm', JSON.stringify(customers));
+            resetCustomerForm();
+            renderCustomers();
+        }
+
+        function editCustomer(index) {
+            const c = customers[index];
+            document.getElementById('editCustIndex').value = index;
+            document.getElementById('cCode').value = c.code;
+            document.getElementById('cName').value = c.name;
+            document.getElementById('cProdSelect').value = c.prodName;
+            document.getElementById('cPlan').value = c.plan;
+            document.getElementById('cPrice').value = c.price;
+            document.getElementById('cCompanyPrice').value = c.companyPrice || 0;
+            document.getElementById('cWarranty').value = c.warranty;
+            document.getElementById('cDateStart').value = c.dateStart.replace(' ', 'T');
+            document.getElementById('cDateEnd').value = c.dateEnd;
+            document.getElementById('btnCancelCust').style.display = 'inline-flex';
+        }
+
+        function deleteCustomer(index) {
+            if (confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យអតិថិជននេះមែនទេ?")) {
+                customers.splice(index, 1);
+                localStorage.setItem('sys_customers_sm', JSON.stringify(customers));
+                renderCustomers();
+                showToast("លុបទិន្នន័យរួចរាល់!");
+            }
+        }
+
+        function resetCustomerForm() {
+            document.getElementById('customerForm').reset();
+            document.getElementById('editCustIndex').value = "-1";
+            document.getElementById('cCompanyPrice').value = "0";
+            document.getElementById('btnCancelCust').style.display = 'none';
+            initFormDates();
+        }
+
+        function updateProductSelectDropdown() {
+            const select = document.getElementById('cProdSelect');
+            select.innerHTML = '<option value="">-- រើសទំនិញ --</option>';
+            products.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.name;
+                opt.innerHTML = `<strong>${p.name}</strong> (កូដ: ${p.code})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderProducts(filterData = null) {
+            const dataToRender = filterData || products;
+            const tbody = document.getElementById('prodTableBody');
+            tbody.innerHTML = '';
+            dataToRender.forEach((p, i) => {
+                const cost = p.costPrice || 0;
+                const profit = p.profit !== undefined ? p.profit : (p.price - cost);
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="font-family:monospace; color:var(--bright-blue);"><strong>${p.code}</strong></td>
+                        <td><strong>${p.name}</strong></td>
+                        <td>${p.plan} ខែ</td>
+                        <td><span style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:var(--radius-sm); font-size:11.5px;"><strong>${p.warranty}</strong></span></td>
+                        <td>$${p.companyPrice.toFixed(2)}</td>
+                        <td style="color:var(--gray-text); font-weight:500;">$${cost.toFixed(2)}</td>
+                        <td style="color:var(--bright-blue);"><strong>$${p.price.toFixed(2)}</strong></td>
+                        <td style="color:var(--success);"><strong>$${profit.toFixed(2)}</strong></td>
+                        <td>
+                            <button class="btn-icon" onclick="editProduct(${i})"><span class="material-icons-round">edit</span></button>
+                            <button class="btn-icon" style="color:var(--danger)" onclick="deleteProduct(${i})"><span class="material-icons-round">delete</span></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderCustomers(filterData = null) {
+            const dataToRender = filterData || customers;
+            const tbody = document.getElementById('custTableBody');
+            tbody.innerHTML = '';
+            dataToRender.forEach((c, i) => {
+                const actualPrice = parseFloat(c.price) || 0;
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="font-family:monospace;">${c.code}</td>
+                        <td><strong>${c.name}</strong></td>
+                        <td style="color:var(--bright-blue);"><strong>${c.prodName}</strong></td>
+                        <td>${c.plan} ខែ</td>
+                        <td>${c.warranty}</td>
+                        <td style="color:var(--success);"><strong>$${actualPrice.toFixed(2)}</strong></td>
+                        <td style="font-size:12px; color:var(--gray-text);">${c.dateStart}</td>
+                        <td style="font-size:12px; color:#b45309;"><strong>${c.dateEnd}</strong></td>
+                        <td>
+                            <div style="display:flex; gap:4px;">
+                                <button class="btn btn-secondary" style="padding:4px 8px; font-size:11.5px;" onclick="openReceiptModal(${i})">
+                                    <span class="material-icons-round" style="font-size:15px;">receipt</span> <strong>វិក្កយបត្រ</strong>
+                                </button>
+                                <button class="btn-icon" onclick="editCustomer(${i})"><span class="material-icons-round">edit</span></button>
+                                <button class="btn-icon" style="color:var(--danger)" onclick="deleteCustomer(${i})"><span class="material-icons-round">delete</span></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filterTableData() {
+            const query = document.getElementById('tableSearchInput').value.toLowerCase().trim();
+            if (currentTab === 'products') {
+                const filtered = products.filter(p => p.name.toLowerCase().includes(query) || p.code.toLowerCase().includes(query));
+                renderProducts(filtered);
+            } else {
+                const filtered = customers.filter(c => c.name.toLowerCase().includes(query) || c.code.toLowerCase().includes(query) || c.prodName.toLowerCase().includes(query));
+                renderCustomers(filtered);
+            }
+        }
+
+        function openReceiptModal(index) {
+            activeReceiptIndex = index;
+            toggleReceiptMode('normal');
+            document.getElementById('receiptModal').style.display = 'flex';
+        }
+
+        function toggleReceiptMode(mode) {
+            activeReceiptMode = mode;
+            const c = customers[activeReceiptIndex];
+            
+            const btnOptNormal = document.getElementById('btnOptNormal');
+            const btnOptComp = document.getElementById('btnOptComp');
+            const compSorrySection = document.getElementById('compSorrySection');
+            const compActionBox = document.getElementById('compActionBox');
+            
+            const rowNormalPlan = document.getElementById('rowNormalPlan');
+            const rowNormalPrice = document.getElementById('rowNormalPrice');
+            const rowDateOld = document.getElementById('rowDateOld');
+            const rowDaysAdded = document.getElementById('rowDaysAdded');
+            const rowDateBuy = document.getElementById('rowDateBuy');
+            const lblEndDate = document.getElementById('lblEndDate');
+            const rReceiptTypeText = document.getElementById('rReceiptTypeText');
+            const rHeaderIcon = document.getElementById('rHeaderIcon');
+            const rSavedPercent = document.getElementById('rSavedPercent');
+
+            document.getElementById('rCode').innerHTML = `<strong>${c.code}</strong>`;
+            document.getElementById('rName').innerHTML = `<strong>${c.name}</strong>`;
+            document.getElementById('rProdName').innerHTML = `<strong>${c.prodName}</strong>`;
+            
+            const salePrice = parseFloat(c.price) || 0;
+            const companyPrice = parseFloat(c.companyPrice) || 0;
+            document.getElementById('rPrice').innerHTML = `<strong>$${salePrice.toFixed(2)}</strong>`;
+            document.getElementById('rWarranty').innerHTML = `<strong>រយៈពេលធានា៖ ${c.warranty}</strong>`;
+
+            if (mode === 'normal') {
+                btnOptNormal.className = 'btn btn-primary';
+                btnOptComp.className = 'btn btn-secondary';
+                compSorrySection.style.display = 'none';
+                compActionBox.style.display = 'none';
+                
+                rowNormalPlan.style.display = 'flex';
+                rowNormalPrice.style.display = 'flex';
+                rowDateBuy.style.display = 'flex';
+                rSavedPercent.style.display = 'block';
+                
+                rowDateOld.style.display = 'none';
+                rowDaysAdded.style.display = 'none';
+                lblEndDate.innerHTML = '<strong>ថ្ងៃផុតកំណត់</strong>';
+                rReceiptTypeText.innerHTML = '<strong>វិក្កយបត្រទំនិញ</strong>';
+                rHeaderIcon.src = 'thank.png';
+                rHeaderIcon.onerror = function() { this.src = 'https://cdn-icons-png.flaticon.com/512/5442/5442020.png'; };
+                
+                document.getElementById('rPlan').innerHTML = `<strong>${c.plan} ខែ</strong>`;
+                document.getElementById('rOriginalPrice').innerText = companyPrice > 0 ? `$${companyPrice.toFixed(2)}` : '--';
+                document.getElementById('rDate').innerHTML = `<strong>${c.dateStart.split(' ')[0]}</strong>`;
+                document.getElementById('rEnd').innerHTML = `<strong>${c.dateEnd.split(' ')[0]}</strong>`;
+
+                let savedPercent = 0;
+                if (companyPrice > salePrice && companyPrice > 0) {
+                    savedPercent = Math.round(((companyPrice - salePrice) / companyPrice) * 100);
+                }
+                rSavedPercent.innerHTML = `<strong>បើប្រៀបនឹងតម្លៃដើមអ្នកបានចំណេញ ${savedPercent}%</strong>`;
+            } else {
+                btnOptNormal.className = 'btn btn-secondary';
+                btnOptComp.className = 'btn btn-primary';
+                compSorrySection.style.display = 'block';
+                compActionBox.style.display = 'block';
+                
+                rowNormalPlan.style.display = 'none';
+                rowNormalPrice.style.display = 'none';
+                rowDateBuy.style.display = 'none';
+                rSavedPercent.style.display = 'none';
+                
+                rowDateOld.style.display = 'flex';
+                rowDaysAdded.style.display = 'flex';
+                lblEndDate.innerHTML = '<strong>ផុតកំណត់ថ្មី</strong>';
+                rReceiptTypeText.innerHTML = '<strong>វិក្កយបត្រថែមថ្ងៃ</strong>';
+                rHeaderIcon.src = 'thank';
+                rHeaderIcon.onerror = function() { this.src = 'Thank.png'; };
+
+                document.getElementById('rDateOld').innerHTML = `<strong>${c.dateEnd.split(' ')[0]}</strong>`;
+                recalculateCompensationDates();
+            }
+        }
+
+        function recalculateCompensationDates() {
+            if (activeReceiptIndex === null || activeReceiptMode !== 'comp') return;
+            const c = customers[activeReceiptIndex];
+            const extraDays = parseInt(document.getElementById('inputAddDays').value) || 0;
+            
+            document.getElementById('rDaysAdded').innerHTML = `<span class="comp-badge"><strong>+${extraDays} ថ្ងៃ</strong></span>`;
+            
+            const cleanDateStr = c.dateEnd.replace(' ', 'T');
+            const baseDate = new Date(cleanDateStr);
+            if (!isNaN(baseDate.getTime())) {
+                baseDate.setDate(baseDate.getDate() + extraDays);
+                const y = baseDate.getFullYear();
+                const m = String(baseDate.getMonth() + 1).padStart(2, '0');
+                const d = String(baseDate.getDate()).padStart(2, '0');
+                document.getElementById('rEnd').innerHTML = `<strong>${y}-${m}-${d}</strong>`;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('receiptModal').style.display = 'none';
+            activeReceiptIndex = null;
+        }
+
+        function downloadReceiptAsJPG() {
+            const element = document.getElementById('receipt-render-zone');
+            showToast("កំពុងបង្កើតរូបភាព JPG...");
+            
+            html2canvas(element, {
+                scale: 3, 
+                useCORS: true,
+                backgroundColor: null
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                const link = document.createElement('a');
+                const suffix = activeReceiptMode === 'comp' ? 'Compensation' : 'Normal';
+                link.download = `Invoice_${document.getElementById('rCode').innerText.trim()}_${suffix}.jpg`;
+                link.href = imgData;
+                link.click();
+                closeModal();
+                showToast("បានទាញយករូបភាពវិក្កយបត្ររួចរាល់!");
+            });
+        }
+
+        function generateSyncCode() {
+            const dataBundle = { p: products, c: customers };
+            if (products.length === 0 && customers.length === 0) {
+                showToast("គ្មានទិន្នន័យសម្រាប់បង្កើតកូដឡើយ!");
+                return;
+            }
+            try {
+                const jsonString = JSON.stringify(dataBundle);
+                const uint8Array = new TextEncoder().encode(jsonString);
+                const compressed = pako.deflate(uint8Array, { level: 9 });
+                let base64 = btoa(String.fromCharCode.apply(null, compressed));
+                const safeShortCode = base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+                
+                const input = document.getElementById('syncInput');
+                input.value = safeShortCode;
+                input.select();
+                navigator.clipboard.writeText(safeShortCode);
+                showToast("បានបង្រួមកូដខ្លីបំផុត និងចម្លងរួចរាល់!");
+            } catch(err) {
+                showToast("ការបំបែកកូដមានបញ្ហា!");
+            }
+        }
+
+        function loadDataFromCode() {
+            const code = document.getElementById('syncInput').value.trim();
+            if (!code) {
+                showToast("សូមបិទភ្ជាប់កូដសម្ងាត់ជាមុនសិន!");
+                return;
+            }
+            try {
+                let base64 = code.replace(/-/g, '+').replace(/_/g, '/');
+                while (base64.length % 4) { base64 += '='; }
+                
+                const binaryStr = atob(base64);
+                const len = binaryStr.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryStr.charCodeAt(i);
+                }
+                
+                const decompressedBytes = pako.inflate(bytes);
+                const jsonString = new TextDecoder().decode(decompressedBytes);
+                const data = JSON.parse(jsonString);
+                
+                if (data.p && data.c) {
+                    products = data.p;
+                    customers = data.c;
+                    localStorage.setItem('sys_products_sm', JSON.stringify(products));
+                    localStorage.setItem('sys_customers_sm', JSON.stringify(customers));
+                    
+                    if(currentTab === 'products') renderProducts(); else renderCustomers();
+                    updateProductSelectDropdown();
+                    initFormDates();
+                    
+                    showToast("ទាញយក និងពន្លាទិន្នន័យជោគជ័យ!");
+                    document.getElementById('syncInput').value = '';
+                } else { throw new Error(); }
+            } catch (e) {
+                showToast("កូដទិន្នន័យខូច ឬមិនត្រឹមត្រូវ!");
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+
+        window.onload = () => {
+            renderProducts();
+            renderCustomers();
+            updateProductSelectDropdown();
+            initFormDates();
+        };
+    </script>
+</body>
+</html>
